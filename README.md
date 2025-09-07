@@ -17,8 +17,8 @@ FocusTime/
 │   └── Services/
 │       └── ConsoleNotificationService.cs
 │
-│── Presentation/
-│   └── Program.cs
+│── Program.cs
+│    
 │
 FocusTime.sln
 
