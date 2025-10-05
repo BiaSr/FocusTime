@@ -1,28 +1,3 @@
-FocusTime/
-│── Application/
-│   └── UseCases/
-│       └── GerarCronograma.cs
-│
-│── Domain/
-│   └── Entities/
-│       ├── Disciplina.cs
-│       ├── DisciplinaTeorica.cs
-│       ├── DisciplinaPratica.cs
-│       ├── Atividade.cs
-│       ├── Prova.cs
-│       ├── Trabalho.cs
-│       └── Revisao.cs
-│
-│── Infrastructure/
-│   └── Services/
-│       └── ConsoleNotificationService.cs
-│
-│── Program.cs
-│    
-│
-FocusTime.sln
-
------------------------------------------------------
 FocusTime.sln
 │
 ├── FocusTime.Domain
@@ -49,8 +24,10 @@ FocusTime.sln
 │       ├── DisciplinaRepository.cs
 │       └── AtividadeRepository.cs
 │
-└── FocusTime.Presentation.Console
-    └── Program.cs
+│── Program.cs
+│    
+│
+FocusTime.sln
 
 
 -----------------------------------------------------
