@@ -23,6 +23,37 @@ FocusTime/
 FocusTime.sln
 
 -----------------------------------------------------
+FocusTime.sln
+│
+├── FocusTime.Domain
+│   └── Entities/
+│       ├── Disciplina.cs
+│       ├── DisciplinaTeorica.cs
+│       ├── DisciplinaPratica.cs
+│       ├── Atividade.cs
+│       ├── Prova.cs
+│       ├── Trabalho.cs
+│       └── Revisao.cs
+│
+├── FocusTime.Application
+│   ├── Interfaces/
+│   │   ├── IDisciplinaRepository.cs
+│   │   └── IAtividadeRepository.cs
+│   └── UseCases/
+│       └── GerarCronograma.cs
+│
+├── FocusTime.Infrastructure
+│   ├── Data/
+│   │   └── AppDbContext.cs
+│   └── Repositories/
+│       ├── DisciplinaRepository.cs
+│       └── AtividadeRepository.cs
+│
+└── FocusTime.Presentation.Console
+    └── Program.cs
+
+
+-----------------------------------------------------
 
 === MENU PRINCIPAL ===
 1 - Cadastrar Disciplina
