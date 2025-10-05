@@ -1,14 +1,29 @@
 ﻿using FocusTime.Domain.Entities;
 using FocusTime.Application.UseCases;
 using FocusTime.Infrastructure.Services;
+using FocusTime.Infrastructure.Data;
+using FocusTime.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace FocusTime.Presentation {
     class Program {
-        private static List<Disciplina> disciplinas = new();
-        private static List<Atividade> atividades = new();
+        private static DisciplinaRepository disciplinaRepo = null!;
+        private static AtividadeRepository atividadeRepo = null!;
         private static readonly ConsoleNotificationService notificacao = new();
 
-        static void Main(string[] args) {
+        static async Task Main(string[] args) {
+            // Configurar as opções do DbContext
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseSqlite("Data Source=FocusTime.db")
+                .Options;
+
+            // Criar o contexto com as opções
+            using var context = new AppDbContext(options);
+            context.Database.EnsureCreated();
+
+            disciplinaRepo = new DisciplinaRepository(context);
+            atividadeRepo = new AtividadeRepository(context);
+
             Console.WriteLine("Bem-vindo ao FocusTime - Sua Agenda Inteligente!\n");
 
             bool executando = true;
@@ -27,24 +42,12 @@ namespace FocusTime.Presentation {
                 Console.WriteLine();
 
                 switch (opcao) {
-                    case "1":
-                        CadastrarDisciplina();
-                        break;
-                    case "2":
-                        CadastrarAtividade();
-                        break;
-                    case "3":
-                        ListarDisciplinas();
-                        break;
-                    case "4":
-                        ListarAtividades();
-                        break;
-                    case "5":
-                        GerarPlano();
-                        break;
-                    case "6":
-                        ExcluirDisciplina();
-                        break;
+                    case "1": await CadastrarDisciplina(); break;
+                    case "2": await CadastrarAtividade(); break;
+                    case "3": await ListarDisciplinas(); break;
+                    case "4": await ListarAtividades(); break;
+                    case "5": await GerarPlano(); break;
+                    case "6": await ExcluirDisciplina(); break;
                     case "0":
                         executando = false;
                         Console.WriteLine("Saindo do FocusTime. Até logo!");
@@ -56,9 +59,10 @@ namespace FocusTime.Presentation {
             }
         }
 
-        // Cadastro de Disciplina
-
-        private static void CadastrarDisciplina() {
+        // ----------------------
+        // CADASTRAR DISCIPLINA
+        // ----------------------
+        private static async Task CadastrarDisciplina() {
             Console.WriteLine("Cadastre sua Disciplina");
 
             Console.Write("Nome: ");
@@ -73,12 +77,16 @@ namespace FocusTime.Presentation {
                 ? new DisciplinaTeorica(nome, carga)
                 : new DisciplinaPratica(nome, carga);
 
-            disciplinas.Add(disciplina);
-            Console.WriteLine($"Disciplina \"{nome}\" cadastrada com sucesso!");
+            await disciplinaRepo.AdicionarAsync(disciplina);
+            Console.WriteLine($"✅ Disciplina \"{nome}\" cadastrada com sucesso!");
         }
-        // Cadastro de Atividade
 
-        private static void CadastrarAtividade() {
+        // ----------------------
+        // CADASTRAR ATIVIDADE
+        // ----------------------
+        private static async Task CadastrarAtividade() {
+            var disciplinas = await disciplinaRepo.ListarAsync();
+
             if (disciplinas.Count == 0) {
                 Console.WriteLine("Nenhuma disciplina cadastrada. Cadastre uma disciplina antes.");
                 return;
@@ -100,52 +108,58 @@ namespace FocusTime.Presentation {
             Console.Write("Digite o tipo da atividade (1 = Prova, 2 = Trabalho, 3 = Revisão): ");
             int tipo = LerInteiro("", min: 1, max: 3);
 
+            var disciplinaEscolhida = disciplinas[escolhaDisciplina];
             Atividade atividade = tipo switch {
-                1 => new Prova(descricao, data, disciplinas[escolhaDisciplina]),
-                2 => new Trabalho(descricao, data, disciplinas[escolhaDisciplina]),
-                3 => new Revisao(descricao, data, disciplinas[escolhaDisciplina]),
-                _ => new Prova(descricao, data, disciplinas[escolhaDisciplina])
+                1 => new Prova(descricao, data, disciplinaEscolhida),
+                2 => new Trabalho(descricao, data, disciplinaEscolhida),
+                3 => new Revisao(descricao, data, disciplinaEscolhida),
+                _ => new Prova(descricao, data, disciplinaEscolhida)
             };
 
-            atividades.Add(atividade);
-            Console.WriteLine($"Atividade \"{descricao}\" cadastrada com sucesso!");
+            await atividadeRepo.AdicionarAsync(atividade);
+            Console.WriteLine($"✅ Atividade \"{descricao}\" cadastrada com sucesso!");
         }
 
-        // Listar Disciplinas
+        // ----------------------
+        // LISTAR DISCIPLINAS
+        // ----------------------
+        private static async Task ListarDisciplinas() {
+            var disciplinas = await disciplinaRepo.ListarAsync();
 
-        private static void ListarDisciplinas() {
             Console.WriteLine("Disciplinas cadastradas:");
-
             if (disciplinas.Count == 0) {
                 Console.WriteLine("Nenhuma disciplina cadastrada.");
                 return;
             }
 
-            for (int i = 0; i < disciplinas.Count; i++) {
-                Console.WriteLine($"{i + 1}. {disciplinas[i].Nome} - {disciplinas[i].GetTipo()} - {disciplinas[i].CargaHoraria}h");
+            foreach (var d in disciplinas) {
+                Console.WriteLine($"{d.Nome} - {d.GetTipo()} - {d.CargaHoraria}h");
             }
         }
 
-        // Listar Atividades
+        // ----------------------
+        // LISTAR ATIVIDADES
+        // ----------------------
+        private static async Task ListarAtividades() {
+            var atividades = await atividadeRepo.ListarAsync();
 
-        private static void ListarAtividades() {
             Console.WriteLine("Atividades cadastradas:");
-
             if (atividades.Count == 0) {
                 Console.WriteLine("Nenhuma atividade cadastrada.");
                 return;
             }
 
-            for (int i = 0; i < atividades.Count; i++) {
-                Console.WriteLine($"{i + 1}. [{atividades[i].GetType().Name}] {atividades[i].Descricao} - " +
-                                  $"{atividades[i].Disciplina.Nome} ({atividades[i].Disciplina.GetTipo()}) - " +
-                                  $"Entrega: {atividades[i].DataEntrega:dd/MM/yyyy}");
+            foreach (var a in atividades) {
+                Console.WriteLine($"[{a.GetType().Name}] {a.Descricao} - {a.Disciplina.Nome} - Entrega: {a.DataEntrega:dd/MM/yyyy}");
             }
         }
 
-        // Excluir Disciplina
+        // ----------------------
+        // EXCLUIR DISCIPLINA
+        // ----------------------
+        private static async Task ExcluirDisciplina() {
+            var disciplinas = await disciplinaRepo.ListarAsync();
 
-        private static void ExcluirDisciplina() {
             if (disciplinas.Count == 0) {
                 Console.WriteLine("Nenhuma disciplina cadastrada para excluir.");
                 return;
@@ -153,22 +167,25 @@ namespace FocusTime.Presentation {
 
             Console.WriteLine("Escolha a disciplina para excluir:");
             for (int i = 0; i < disciplinas.Count; i++) {
-                Console.WriteLine($"{i + 1}. {disciplinas[i].Nome} - {disciplinas[i].GetTipo()}");
+                Console.WriteLine($"{i + 1}. {disciplinas[i].Nome}");
             }
 
             int escolha = LerInteiro("Número da disciplina: ", min: 1, max: disciplinas.Count) - 1;
-
             var disciplinaRemovida = disciplinas[escolha];
 
-            // Remover atividades ligadas a esta disciplina
-            atividades.RemoveAll(a => a.Disciplina == disciplinaRemovida);
+            await disciplinaRepo.ExcluirAsync(disciplinaRemovida.Id);
+            await atividadeRepo.RemoverPorDisciplinaAsync(disciplinaRemovida.Id);
 
-            disciplinas.RemoveAt(escolha);
-
-            Console.WriteLine($"Disciplina \"{disciplinaRemovida.Nome}\" e suas atividades associadas foram removidas com sucesso!");
+            Console.WriteLine($"✅ Disciplina \"{disciplinaRemovida.Nome}\" e suas atividades associadas foram removidas com sucesso!");
         }
 
-        private static void GerarPlano() {
+        // ----------------------
+        // GERAR ALERTA
+        // ----------------------
+        private static async Task GerarPlano() {
+            var disciplinas = await disciplinaRepo.ListarAsync();
+            var atividades = await atividadeRepo.ListarAsync();
+
             if (atividades.Count == 0) {
                 Console.WriteLine("Nenhuma atividade cadastrada.");
                 return;
@@ -177,16 +194,19 @@ namespace FocusTime.Presentation {
             var cronograma = new GerarAlerta();
             var plano = cronograma.CriarPlano(disciplinas, atividades);
 
-            Console.WriteLine("\n ALERTA DE ESTUDOS:");
+            Console.WriteLine("\n📅 ALERTA DE ESTUDOS:");
             Console.WriteLine(new string('-', 40));
 
             foreach (var tarefa in plano) {
                 notificacao.Notificar(tarefa);
             }
 
-            Console.WriteLine("\n Fim do Cronograma!");
+            Console.WriteLine("\n✅ Fim do Cronograma!");
         }
 
+        // ----------------------
+        // AUXILIARES
+        // ----------------------
         private static int LerInteiro(string mensagem, int min = int.MinValue, int max = int.MaxValue) {
             int valor;
             while (true) {
