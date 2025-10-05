@@ -3,10 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FocusTime.Infrastructure.Data {
     public class AppDbContext : DbContext {
-        // Construtor padrão para o EF Core Design Time
         public AppDbContext() { }
 
-        // Construtor para uso com injeção de dependência
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Disciplina> Disciplinas { get; set; }
@@ -19,14 +17,13 @@ namespace FocusTime.Infrastructure.Data {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
-            // Configuração para Disciplina
+
             modelBuilder.Entity<Disciplina>()
                 .HasKey(d => d.Id);
 
             modelBuilder.Entity<DisciplinaTeorica>().HasBaseType<Disciplina>();
             modelBuilder.Entity<DisciplinaPratica>().HasBaseType<Disciplina>();
 
-            // Configuração para Atividade
             modelBuilder.Entity<Atividade>()
                 .HasKey(a => a.Id);
 

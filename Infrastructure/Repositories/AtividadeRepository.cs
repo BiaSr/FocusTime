@@ -28,7 +28,6 @@ namespace FocusTime.Infrastructure.Repositories {
             }
         }
 
-        // Método que faltava implementar
         public async Task RemoverPorDisciplinaAsync(Guid disciplinaId) {
             var atividades = await _context.Atividades
                 .Where(a => a.DisciplinaId == disciplinaId)

@@ -12,12 +12,11 @@ namespace FocusTime.Presentation {
         private static readonly ConsoleNotificationService notificacao = new();
 
         static async Task Main(string[] args) {
-            // Configurar as opções do DbContext
+
             var options = new DbContextOptionsBuilder<AppDbContext>()
                 .UseSqlite("Data Source=FocusTime.db")
                 .Options;
 
-            // Criar o contexto com as opções
             using var context = new AppDbContext(options);
             context.Database.EnsureCreated();
 

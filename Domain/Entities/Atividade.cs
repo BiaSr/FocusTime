@@ -6,7 +6,6 @@
         public Disciplina Disciplina { get; set; } = null!;
         public Guid DisciplinaId { get; set; }
 
-        // Construtor protegido sem parâmetros para EF Core
         protected Atividade() { }
 
         protected Atividade(string descricao, DateTime dataEntrega, Disciplina disciplina) {
