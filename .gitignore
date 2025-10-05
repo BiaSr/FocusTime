@@ -1,0 +1,6 @@
+# Pastas de saida e cache do .NET / Visual Studio
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.sln.docstates
