@@ -1,9 +1,11 @@
 ﻿namespace FocusTime.Domain.Entities {
     public abstract class Disciplina {
-        public string Nome { get; private set; }
-        public int CargaHoraria { get; private set; }
+        public Guid Id { get; set; }
+        public string Nome { get; set; }
+        public int CargaHoraria { get; set; }
 
         protected Disciplina(string nome, int cargaHoraria) {
+            Id = Guid.NewGuid();
             Nome = nome;
             CargaHoraria = cargaHoraria;
         }
